@@ -124,20 +124,20 @@ loopln  ldy xstart      ; get source x pos.
         lda (ptr2),y    ; get source byte
         ldy dxstart     ; get destination x pos.
         sta (ptr),y     ; poke destination byte
-        inc xstart
-        inc dxstart
+        inc xstart      ; next byte in source row
+        inc dxstart     ; next byte in destination row
         lda xstart
-        cmp xend
-        bne loopln
-        inc dystart
-        inc ystart
+        cmp xend        ; end of line ?
+        bne loopln      ; no : loop
+        inc dystart     ; next line (destination)
+        inc ystart      ; next line (source)
         lda tempy1      ; restore x pos. pointers
         sta xstart      ; for the next line
         lda tempy2
         sta dxstart
         lda ystart
         cmp yend        ; last line ?
-        bne doframe
+        bne doframe     ; no : loop
         rts
 *
 *
