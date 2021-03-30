@@ -21,7 +21,7 @@ rdkey   equ $FD0C      ; wait for keypress
 auxmov  equ $C311      
 xfer    equ $C314
 wait    equ $FCA8
-
+*
 * ROM switches
 *
 graphics equ $C050
@@ -248,5 +248,3 @@ lo      hex 0000000000000000        ; low byte of HGR memory address
         hex 5050505050505050
         hex D0D0D0D0D0D0D0D0
 *
-
-
