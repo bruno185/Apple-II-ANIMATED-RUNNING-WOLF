@@ -52,20 +52,38 @@ delay   equ $90
         lda mixoff      ; no text
         lda graphics    ; graphic mode
         lda hires       ; hgr 
-
+*
 mainlp  nop
         bit kbd
-        bmi out
+        bmi dokey
         jsr setvars     ; prepare vars 
-        bcs out         ; end of frames ? yes : end
+        bcs exit        ; end of frames ? yes : end
         jsr doframe     ; draw a frame
         lda #delay
         jsr wait
         inc framenb     ; next frame
         jmp mainlp      ; loop
-out     jsr home
+*
+dokey   lda kbd
+        cmp #$A0        ; space char ?
+        bne exit
+        bit kbdstrb     ; Clear out any data that is already at KBD
+waitk   bit kbd
+        bpl waitk
+        bit kbdstrb
+        jmp mainlp
+*
+exit    bit kbdstrb
+        jsr home
         jsr text
         rts
+*
+*
+dowaitk bit kbdstrb     ; Clear out any data that is already at KBD
+        bit kbd
+        bmi dowaitk
+        rts
+
 *
 * UPDATE all vars
 * to prepare a frame display
