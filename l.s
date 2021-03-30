@@ -78,13 +78,6 @@ exit    bit kbdstrb
         jsr text
         rts
 *
-*
-dowaitk bit kbdstrb     ; Clear out any data that is already at KBD
-        bit kbd
-        bmi dowaitk
-        rts
-
-*
 * UPDATE all vars
 * to prepare a frame display
 * according to frame number and animm array.
