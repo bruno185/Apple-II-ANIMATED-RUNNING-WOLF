@@ -40,7 +40,7 @@ ptr2    equ $08
 * CONST
 posx    equ $0C
 posy    equ $40
-delay   equ $90
+delay   equ $A0
 *
         org $8000
         lda #17         ; 40 col. 
@@ -52,14 +52,26 @@ delay   equ $90
         lda mixoff      ; no text
         lda graphics    ; graphic mode
         lda hires       ; hgr 
+        jsr docolor     ; change color (high) bit of images
 *
 mainlp  nop
         bit kbd
         bmi dokey
-        jsr setvars     ; prepare vars 
+        lda switch      ; toggle page1 / page2
+        eor #$01
+        sta switch
+        bne p1 
+        lda page2       ; display page 2, switch = 0
+        jmp main2 
+p1      lda page1       ; display page 1, switch = 1
+main2   jsr setvars     ; prepare vars 
         bcs exit        ; end of frames ? yes : end
-        jsr doframe     ; draw a frame
-        lda #delay
+        jsr doframe     ; draw a frame, in p1 or p2
+* double buffering
+* if page 1 is on (switch = 1), we draw on page 2
+* if page 2 is on (switch = 0), we draw on page 1
+µ
+        lda #delay      ; delay between frames
         jsr wait
         inc framenb     ; next frame
         jmp mainlp      ; loop
@@ -94,7 +106,7 @@ setvars lda framenb     ; frame counter
         sta framenb     ; for infinite loop
         jmp setvars     ; for infinite loop
         sec             ; flag : C=1 : no more frame to draw
-        rts 
+        rts             ; we should never get here
 notfinished sta xstart  ; updates x pos of upperleft corner
         inx 
         lda anim,x
@@ -114,8 +126,12 @@ notfinished sta xstart  ; updates x pos of upperleft corner
 *
 *
 doframe ldx dystart      ; get dest y pos (line #)    
-        lda hi,x        ; set destination line pointer (ptr), $2000
-        sta ptr+1
+        lda hi,x         ; set destination line pointer (ptr), $2000
+        ldy switch
+        beq do2000
+        clc 
+        adc #$20        ; ofr page 2 ($4000)
+do2000  sta ptr+1
         lda lo,x 
         sta ptr
 *
@@ -152,7 +168,7 @@ loopln  ldy xstart      ; get source x pos.
         rts
 *
 *
-* clear HGR screen ($2000) with color1
+* clear HGR screen ($2000 + $4000) with color1
 *
 clear1  ldx #$00
 c2      lda lo,x
@@ -167,10 +183,47 @@ c1      sta (ptr),y
         inx
         cpx #$C0       ; 192 ligne
         bne c2
+*
+cls4000 ldx #$00
+c24     lda lo,x
+        sta ptr
+        lda hi,x
+        clc
+        adc #$20
+        sta ptr+1
+        ldy #$27
+        lda color1
+c14     sta (ptr),y
+        dey
+        bpl c14
+        inx
+        cpx #$C0        ; 192 ligne
+        bne c24
+        lda #$FF        ; to see page1/page2 alternate
+        sta $4000
+        rts
+*
+* change high bit of source images ($6000 to $7FFF)
+docolor lda #$60            ; set pointer
+        sta ptr+1
+        lda #$00
+        sta ptr
+        ldy #$00
+lcolor  lda (ptr),y         ; get image byte
+        and #$7F            ; set high bit to 0
+        sta (ptr),y         ; poke byte
+        iny
+        bne lcolor          ; loop in page
+        inc docolor+1       ; self modifying code
+        lda docolor+1       ; to get next page
+        cmp #$80            ; end reached ?
+        bne docolor
+        lda #$60            ; reset code
+        sta docolor+1
         rts
 *
 *
-*
+switch  hex 00
 color1  hex 00
 
 tempy1  hex 00      ; tempo var
