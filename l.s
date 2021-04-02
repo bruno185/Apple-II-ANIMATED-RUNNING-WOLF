@@ -1,7 +1,9 @@
 * ANIMATED RUNNING WOLF
 * HGR image ("LOUP") must be loaded @ $6000 first
-* This program split the "LOUP" image and send these parts to HGR screen
+* This program split the "LOUP" image in 9 pieces
+* and sends these 9 parts to HGR screen
 * thus creating an animation
+*
 *
 * ROM routines
         lst off
