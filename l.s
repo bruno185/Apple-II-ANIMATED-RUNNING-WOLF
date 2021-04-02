@@ -61,9 +61,11 @@ mainlp  nop
         eor #$01
         sta switch
         bne p1 
+        jsr dovbl       ; wait for VBL
         lda page2       ; display page 2, switch = 0
         jmp main2 
-p1      lda page1       ; display page 1, switch = 1
+p1      jsr dovbl
+        lda page1       ; display page 1, switch = 1
 main2   jsr setvars     ; prepare vars 
         bcs exit        ; end of frames ? yes : end
         jsr doframe     ; draw a frame, in p1 or p2
@@ -222,6 +224,13 @@ lcolor  lda (ptr),y         ; get image byte
         sta docolor+1
         rts
 *
+* wait for VBL
+dovbl   nop
+        pha
+loopvbl lda vbl
+        bmi loopvbl
+        pla 
+        rts
 *
 switch  hex 00
 color1  hex 00
