@@ -74,7 +74,7 @@ main2   jsr setvars     ; prepare vars
 * double buffering
 * if page 1 is on (switch = 1), we draw on page 2
 * if page 2 is on (switch = 0), we draw on page 1
-µ
+*
         lda #delay      ; delay between frames
         jsr wait
         inc framenb     ; next frame
